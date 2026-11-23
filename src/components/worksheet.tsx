@@ -15,6 +15,8 @@ import {
   cityTax,
   deptTotal,
   dollars,
+  floorOf,
+  maxCut,
   millWorth,
   money,
   type Dept,
@@ -100,7 +102,8 @@ export function Worksheet() {
     for (const [id, level] of Object.entries(plan.cuts)) {
       const p = PROGS.get(id);
       if (!p || !level) continue;
-      const v = (p.amt * Math.min(level, p.cap || 0)) / 100;
+      const deepest = maxCut(p);
+      const v = (p.amt * Math.min(level, deepest)) / 100;
       cuts += v;
       byDept[p.dept.id] = (byDept[p.dept.id] || 0) + v;
     }
@@ -537,8 +540,10 @@ export function Worksheet() {
             <h2>A city budget, built by you</h2>
             <p className="lede">
               Close the Year {plan.year} gap by cutting General Fund lines, adding revenue, or
-              both. Amounts are the FY 2027 adopted figures. Lines required by debt, the CRA plan,
-              or a basic legal duty are capped or locked.
+              both. Amounts are the FY 2027 adopted figures. Ongoing lines keep at least 25% as a
+              basic cost, even if the work is reduced or contracted out. A contribution or a
+              one-time equipment purchase can still go to zero. Debt, the CRA payment, and a few
+              offices are tighter than that, or locked.
             </p>
           </div>
           <div className="row-actions" style={{ marginBottom: 16 }}>
@@ -912,12 +917,15 @@ function DeptBox({
                 <span className="num">{dollars(p.amt)}</span>
               </div>
               <p>{p.note}</p>
+              {floorOf(p) > 0 && maxCut(p) === 100 - floorOf(p) && (
+                <p>At least {floorOf(p)}% stays ({dollars((p.amt * floorOf(p)) / 100)}). A basic cost on this worksheet, not a quote.</p>
+              )}
               <div className="seg" role="group" aria-label={`Cut to ${p.name}`}>
-                {LEVELS.filter((l) => l <= p.cap).map((l) => (
+                {LEVELS.filter((l) => l <= maxCut(p)).map((l) => (
                   <button
                     key={l}
                     type="button"
-                    aria-pressed={Math.min(cuts[p.id] || 0, p.cap) === l}
+                    aria-pressed={Math.min(cuts[p.id] || 0, maxCut(p)) === l}
                     onClick={() => onCut(p.id, l)}
                   >
                     {l === 0 ? "None" : l === 100 ? "Cut all" : `−${l}%`}

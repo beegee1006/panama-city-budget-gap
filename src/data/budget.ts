@@ -19,8 +19,13 @@ export type Prog = {
   name: string;
   amt: number;
   note: string;
-  /** 0 = fixed, not adjustable. Otherwise the deepest cut offered. */
+  /** 0 = fixed, not adjustable. Otherwise the deepest cut offered, before the floor. */
   cap: number;
+  /**
+   * Percent of the adopted amount that stays.
+   * Omitted means BASIC_FLOOR. Set 0 when the line can go to zero.
+   */
+  floor?: number;
 };
 
 export type Dept = {
@@ -55,7 +60,8 @@ export const DEPTS: Dept[] = [
         name: "Vehicles and equipment",
         amt: 54_000,
         cap: 100,
-        note: "Capital outlay in the FY 2027 adopted police budget.",
+        floor: 0,
+        note: "Capital outlay in the FY 2027 adopted police budget. A purchase can be skipped, so this line can go to zero.",
       },
       {
         id: "p_debt",
@@ -90,7 +96,8 @@ export const DEPTS: Dept[] = [
         name: "Equipment",
         amt: 11_632,
         cap: 100,
-        note: "Capital outlay adopted for FY 2027. Apparatus purchases are not in this line.",
+        floor: 0,
+        note: "Capital outlay adopted for FY 2027. Apparatus purchases are not in this line. A purchase can be skipped, so this line can go to zero.",
       },
       {
         id: "f_debt",
@@ -251,14 +258,16 @@ export const DEPTS: Dept[] = [
         name: "Destination Panama City",
         amt: 30_000,
         cap: 100,
-        note: "Budgeted contribution. It was $115,000 in the FY 2026 amended budget.",
+        floor: 0,
+        note: "Budgeted contribution. It was $115,000 in the FY 2026 amended budget. A contribution can go to zero.",
       },
       {
         id: "mardi",
         name: "St. Andrew Mardi Gras",
         amt: 22_500,
         cap: 100,
-        note: "Budgeted contribution. It was $42,500 in FY 2026.",
+        floor: 0,
+        note: "Budgeted contribution. It was $42,500 in FY 2026. A contribution can go to zero.",
       },
     ],
   },
@@ -349,7 +358,8 @@ export const DEPTS: Dept[] = [
         name: "Chamber of Commerce",
         amt: 58_500,
         cap: 100,
-        note: "Budgeted contribution.",
+        floor: 0,
+        note: "Budgeted contribution. A contribution can go to zero.",
       },
     ],
   },
@@ -481,7 +491,19 @@ export const DEPTS: Dept[] = [
   },
 ];
 
-export const LEVELS = [0, 10, 25, 50, 100] as const;
+export const LEVELS = [0, 10, 25, 50, 75, 100] as const;
+
+/** Share of an ongoing line this worksheet will not cut. A planning floor, not an adopted minimum. */
+export const BASIC_FLOOR = 25;
+
+export function floorOf(p: Prog) {
+  return p.floor ?? BASIC_FLOOR;
+}
+
+/** Deepest cut the buttons will offer, after the line cap and the floor. */
+export function maxCut(p: Prog) {
+  return Math.min(p.cap, 100 - floorOf(p));
+}
 
 export type RevRange = {
   id: string;
