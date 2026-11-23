@@ -22,6 +22,7 @@ import {
   type Dept,
   type Year,
 } from "@/data/budget";
+import { submitPostcard } from "@/lib/collect";
 
 const PROGS = allPrograms();
 const KEY = "pc-budget-gap-v1";
@@ -36,6 +37,8 @@ type Plan = {
   headline: string;
   pal: "bay" | "sunset" | "sand";
   av: number;
+  name: string;
+  email: string;
 };
 
 const fresh = (): Plan => ({
@@ -45,6 +48,8 @@ const fresh = (): Plan => ({
   headline: "My Panama City budget",
   pal: "bay",
   av: 250000,
+  name: "",
+  email: "",
 });
 
 const PALS = {
@@ -66,6 +71,9 @@ export function Worksheet() {
   const [avText, setAvText] = useState("250,000");
   const [showMath, setShowMath] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [step, setStep] = useState(0);
+  const [sent, setSent] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [sendNote, setSendNote] = useState("");
   const imgRef = useRef<HTMLImageElement>(null);
   const capRef = useRef<HTMLTextAreaElement>(null);
   const ready = useRef(false);
@@ -227,7 +235,7 @@ export function Worksheet() {
         top.length ? ` with ${top.join(", ")}` : ""
       }. The city's General Fund is ${money(GF_TOTAL)}. Try the worksheet and see what you'd cut.`;
     }
-  }, [plan, totals]);
+  }, [plan, totals, step]);
 
   const topBar = SERVICES[0]?.amt || 1;
   const cutW = Math.min(totals.cuts / totals.gap, 1) * 100;
@@ -242,6 +250,88 @@ export function Worksheet() {
       else delete cuts[id];
       return { ...p, cuts };
     });
+  }
+
+  function go(next: number) {
+    setStep(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function choiceLines() {
+    const cuts: string[] = [];
+    for (const [id, level] of Object.entries(plan.cuts)) {
+      const p = PROGS.get(id);
+      if (!p || !level) continue;
+      cuts.push(`${p.dept.name} / ${p.name}: ${Math.min(level, maxCut(p))}%`);
+    }
+    const revenue: string[] = [];
+    for (const r of REV) {
+      const amt = revAmount(r.id, plan.rev[r.id], plan.year);
+      if (amt) revenue.push(`${r.name}: +${Math.round(amt)}`);
+    }
+    return {
+      cuts: cuts.join("; ") || "none",
+      revenue: revenue.join("; ") || "none",
+    };
+  }
+
+  async function sharePostcard() {
+    const text = capRef.current?.value || "";
+    const src = imgRef.current?.src;
+    if (!src) return;
+    try {
+      const blob = await (await fetch(src)).blob();
+      const file = new File([blob], "panama-city-budget.png", { type: "image/png" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: plan.headline || "Panama City budget",
+          text,
+        });
+        return;
+      }
+    } catch {
+      /* fall through to the caption copy */
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      capRef.current?.select();
+    }
+  }
+
+  async function sendResponse() {
+    const name = plan.name.trim();
+    const email = plan.email.trim();
+    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSent("error");
+      setSendNote("Enter your name and a real email address.");
+      return;
+    }
+    setSent("sending");
+    setSendNote("");
+    const lines = choiceLines();
+    try {
+      await submitPostcard({
+        name,
+        email,
+        year: plan.year === 1 ? "Year 1" : "Year 2",
+        assessed: String(Math.round(plan.av || 0)),
+        cityTaxSavings2027: String(Math.round(tax.s27)),
+        cityTaxSavings2028: String(Math.round(tax.s28)),
+        gap: String(Math.round(totals.gap)),
+        cuts: lines.cuts,
+        revenue: lines.revenue,
+        closed: String(Math.round(totals.closed)),
+      });
+      setSent("sent");
+      setSendNote("Saved. Your name, email, and choices were sent.");
+    } catch {
+      setSent("error");
+      setSendNote("Could not save just now. Try again in a moment.");
+    }
   }
 
   return (
@@ -269,18 +359,22 @@ export function Worksheet() {
             is in place. Use the city's own FY 2027 adopted budget to see what that means for a
             homestead tax bill and for the services the General Fund pays for.
           </p>
-          <nav className="nav">
-            <a href="#overview">Overview</a>
-            <a href="#services">Services</a>
-            <a href="#amendment">Amendment</a>
-            <a href="#bill">Your bill</a>
-            <a href="#build">Build the budget</a>
-            <a href="#card">Postcard</a>
-            <a href="#faq">FAQs</a>
+          <nav className="nav" aria-label="Steps">
+            {["The gap", "Your home", "Postcard"].map((label, i) => (
+              <button
+                key={label}
+                type="button"
+                aria-current={step === i ? "step" : undefined}
+                onClick={() => go(i)}
+              >
+                {i + 1}. {label}
+              </button>
+            ))}
           </nav>
         </div>
       </header>
 
+      {step === 2 && (
       <div className="meter">
         <div className="wrap">
           <div className="meter-row">
@@ -321,7 +415,10 @@ export function Worksheet() {
           </div>
         </div>
       </div>
+      )}
 
+      {step === 0 && (
+      <>
       <section id="overview">
         <div className="wrap">
           <div className="sec-head">
@@ -458,9 +555,17 @@ export function Worksheet() {
               <strong>2029</strong>CPI
             </div>
           </div>
+          <div className="row-actions" style={{ marginTop: 22 }}>
+            <button type="button" className="textbtn" onClick={() => go(1)}>
+              See the homestead savings
+            </button>
+          </div>
         </div>
       </section>
+      </>
+      )}
 
+      {step === 1 && (
       <section id="bill">
         <div className="wrap grid-2">
           <div>
@@ -531,8 +636,21 @@ export function Worksheet() {
             </p>
           </div>
         </div>
+        <div className="wrap">
+          <div className="row-actions" style={{ marginTop: 8 }}>
+            <button type="button" className="textbtn" onClick={() => go(2)}>
+              Make the postcard
+            </button>
+            <button type="button" className="textbtn ghost" onClick={() => go(0)}>
+              Back
+            </button>
+          </div>
+        </div>
       </section>
+      )}
 
+      {step === 2 && (
+      <>
       <section id="build">
         <div className="wrap">
           <div className="sec-head">
@@ -673,8 +791,8 @@ export function Worksheet() {
             ))}
           </div>
           <p className="note" style={{ marginTop: 14 }}>
-            Your choices stay in this browser. They are not sent anywhere, and they are not City
-            decisions.
+            Your choices are not a City decision. Send the response below if you want your name,
+            email, and these choices kept with the other postcards.
           </p>
         </div>
       </section>
@@ -684,7 +802,10 @@ export function Worksheet() {
           <div className="sec-head">
             <p className="eyebrow">Share your take</p>
             <h2>Your budget, on a postcard</h2>
-            <p className="lede">A square-enough image for a social post. Save it, or copy a caption.</p>
+            <p className="lede">
+              One image for the expenses and the revenue you picked. Share it, and send your name
+              and email with the choices so the responses can be read together.
+            </p>
           </div>
           <div className="postcard">
             <div>
@@ -705,6 +826,33 @@ export function Worksheet() {
               </div>
             </div>
             <div>
+              <label className="field">
+                Your name
+                <input
+                  className="head-in"
+                  value={plan.name}
+                  autoComplete="name"
+                  maxLength={80}
+                  onChange={(e) => setPlan((p) => ({ ...p, name: e.target.value }))}
+                />
+              </label>
+              <label className="field">
+                Email
+                <input
+                  className="head-in"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={plan.email}
+                  maxLength={120}
+                  onChange={(e) => setPlan((p) => ({ ...p, email: e.target.value }))}
+                />
+              </label>
+              <p className="note">
+                The postcard image does not include your name or email. Those are sent only when
+                you save the response, along with the homestead value and the cuts and revenue you
+                chose. They go to the person who published this page, not to the City.
+              </p>
               <label className="field">
                 Headline
                 <input
@@ -747,11 +895,64 @@ export function Worksheet() {
               >
                 {copied ? "Copied" : "Copy caption"}
               </button>
+              <button type="button" className="textbtn" style={{ marginTop: 8 }} onClick={() => void sharePostcard()}>
+                Share postcard
+              </button>
+              <div className="row-actions" style={{ marginTop: 8 }}>
+                <button
+                  type="button"
+                  className="textbtn ghost"
+                  onClick={() => {
+                    const text = `${capRef.current?.value || plan.headline} https://beegee1006.github.io/panama-city-budget-gap/`;
+                    window.open(
+                      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }}
+                >
+                  Post on X
+                </button>
+                <button
+                  type="button"
+                  className="textbtn ghost"
+                  onClick={() => {
+                    window.open(
+                      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                        "https://beegee1006.github.io/panama-city-budget-gap/",
+                      )}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }}
+                >
+                  Facebook
+                </button>
+              </div>
+              <button
+                type="button"
+                className="textbtn"
+                style={{ marginTop: 8 }}
+                disabled={sent === "sending"}
+                onClick={() => void sendResponse()}
+              >
+                {sent === "sending" ? "Saving" : sent === "sent" ? "Response saved" : "Save my response"}
+              </button>
+              {sendNote && <p className="note">{sendNote}</p>}
+              <div className="row-actions" style={{ marginTop: 16 }}>
+                <button type="button" className="textbtn ghost" onClick={() => go(1)}>
+                  Back
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
+      </>
+      )}
 
+      {step === 0 && (
+      <>
       <section id="faq" className="faq">
         <div className="wrap">
           <div className="sec-head">
@@ -802,8 +1003,9 @@ export function Worksheet() {
           </Faq>
           <Faq q="Who made this page?">
             It is an independent community resource. It is not produced, reviewed or endorsed by
-            the City of Panama City. It does not collect what you type. Your plan stays in this
-            browser.
+            the City of Panama City. A saved response includes your name, email, homestead value,
+            and the expense and revenue choices. The postcard image stays on your device unless you
+            share it.
           </Faq>
         </div>
       </section>
@@ -855,6 +1057,8 @@ export function Worksheet() {
           </p>
         </div>
       </section>
+      </>
+      )}
 
       <footer className="fine">
         <div className="wrap">

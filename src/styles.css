@@ -170,7 +170,8 @@ h2 {
   margin-top: 22px;
 }
 
-.nav a {
+.nav a,
+.nav button {
   color: var(--color-ink);
   text-decoration: none;
   border: 1px solid var(--color-line);
@@ -182,6 +183,13 @@ h2 {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+  font-family: inherit;
+}
+
+.nav button[aria-current="step"] {
+  background: var(--color-gulf);
+  color: var(--color-gulf-ink);
+  border-color: var(--color-gulf);
 }
 
 .meter {
