@@ -540,10 +540,11 @@ export function Worksheet() {
             <h2>A city budget, built by you</h2>
             <p className="lede">
               Close the Year {plan.year} gap by cutting General Fund lines, adding revenue, or
-              both. Amounts are the FY 2027 adopted figures. Ongoing lines keep at least 25% as a
-              basic cost, even if the work is reduced or contracted out. A contribution or a
-              one-time equipment purchase can still go to zero. Debt, the CRA payment, and a few
-              offices are tighter than that, or locked.
+              both. Amounts are the FY 2027 adopted figures. Police, fire, and public works stop
+              at a 25% cut. Public works here is streets, paving, signs, facilities, City Hall, and
+              public works administration. Other ongoing lines keep at least 25% as a basic cost.
+              Contributions and one-time equipment outside those departments can still go to zero.
+              Debt and the CRA payment stay fixed.
             </p>
           </div>
           <div className="row-actions" style={{ marginBottom: 16 }}>
@@ -918,7 +919,11 @@ function DeptBox({
               </div>
               <p>{p.note}</p>
               {floorOf(p) > 0 && maxCut(p) === 100 - floorOf(p) && (
-                <p>At least {floorOf(p)}% stays ({dollars((p.amt * floorOf(p)) / 100)}). A basic cost on this worksheet, not a quote.</p>
+                <p>
+                  {floorOf(p) >= 50
+                    ? `Stops at a ${100 - floorOf(p)}% cut. ${dollars((p.amt * floorOf(p)) / 100)} stays.`
+                    : `At least ${floorOf(p)}% stays (${dollars((p.amt * floorOf(p)) / 100)}). A basic cost on this worksheet, not a quote.`}
+                </p>
               )}
               <div className="seg" role="group" aria-label={`Cut to ${p.name}`}>
                 {LEVELS.filter((l) => l <= maxCut(p)).map((l) => (
