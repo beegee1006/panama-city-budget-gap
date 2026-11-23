@@ -379,7 +379,7 @@ export function Worksheet() {
             <h2>Where the General Fund goes</h2>
             <p className="lede">
               FY 2027 adopted totals. Utilities, garbage and the marinas are enterprise funds and
-              are not in this chart. Police and fire together are half of what is shown.
+              are not in this chart. Police and fire together are half the General Fund.
             </p>
           </div>
           {SERVICES.map((d) => (
@@ -393,7 +393,8 @@ export function Worksheet() {
           ))}
           <p className="note" style={{ marginTop: 12 }}>
             Source: City of Panama City FY 2027 Adopted Budget, General Fund department totals.
-            They add up to {dollars(GF_TOTAL)}.
+            Information technology ($1,610,437) and the Bay County transportation payment ($179,457)
+            are not on this page. The adopted General Fund is {dollars(GF_TOTAL)}.
           </p>
         </div>
       </section>
@@ -779,8 +780,8 @@ export function Worksheet() {
           <Faq q="Why can't I cut the debt transfers or the CRA payment?">
             Non-departmental expenses in FY 2027 are $3.87 million, and every dollar is a transfer
             for capital notes. Those payments follow the debt. The $2.07 million CRA line is the
-            General Fund's payment into the redevelopment districts. The chamber contribution and
-            the Bay County transportation line, which sit in the same department, can be reduced.
+            General Fund's payment into the redevelopment districts. The chamber contribution,
+            which sits in the same department, can be reduced.
           </Faq>
           <Faq q="The city already has a fire assessment. Why is it a revenue option?">
             Because it already exists, at $6.06 million in the FY 2027 budget, against a $13.6
@@ -916,7 +917,7 @@ function DeptBox({
                   <button
                     key={l}
                     type="button"
-                    aria-pressed={(cuts[p.id] || 0) === l}
+                    aria-pressed={Math.min(cuts[p.id] || 0, p.cap) === l}
                     onClick={() => onCut(p.id, l)}
                   >
                     {l === 0 ? "None" : l === 100 ? "Cut all" : `−${l}%`}
