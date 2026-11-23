@@ -327,10 +327,10 @@ export function Worksheet() {
         closed: String(Math.round(totals.closed)),
       });
       setSent("sent");
-      setSendNote("Saved. Your name, email, and choices were sent.");
-    } catch {
+      setSendNote("Saved to the private response file.");
+    } catch (err) {
       setSent("error");
-      setSendNote("Could not save just now. Try again in a moment.");
+      setSendNote(err instanceof Error ? err.message : "Could not save just now. Try again in a moment.");
     }
   }
 
@@ -849,9 +849,9 @@ export function Worksheet() {
                 />
               </label>
               <p className="note">
-                The postcard image does not include your name or email. Those are sent only when
-                you save the response, along with the homestead value and the cuts and revenue you
-                chose. They go to the person who published this page, not to the City.
+                The postcard image does not include your name or email. Those are added to a
+                private CSV only when you save the response, along with the homestead value and
+                the cuts and revenue you chose. They are not sent to the City.
               </p>
               <label className="field">
                 Headline
@@ -1003,9 +1003,9 @@ export function Worksheet() {
           </Faq>
           <Faq q="Who made this page?">
             It is an independent community resource. It is not produced, reviewed or endorsed by
-            the City of Panama City. A saved response includes your name, email, homestead value,
-            and the expense and revenue choices. The postcard image stays on your device unless you
-            share it.
+            the City of Panama City. A saved response adds your name, email, homestead value,
+            and the expense and revenue choices to a private CSV. The postcard image stays on your
+            device unless you share it.
           </Faq>
         </div>
       </section>
