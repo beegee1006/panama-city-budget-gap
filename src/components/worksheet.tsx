@@ -201,7 +201,11 @@ export function Worksheet() {
               : r.id === "fran"
                 ? `Franchise fee +${raw}%`
                 : r.id === "merchant"
-                  ? "Merchant fee, no cap"
+                  ? raw === 1
+                    ? "Auto cap $20k"
+                    : raw === 2
+                      ? "Auto cap $30k"
+                      : "Auto cap removed"
                   : `Zoning fees +${raw}%`;
       picks.push({ t: label, v, rev: true });
     }
@@ -270,8 +274,10 @@ export function Worksheet() {
     for (const r of REV) {
       if (r.id === "merchant") {
         const raw = plan.rev.merchant || 0;
-        if (raw === 1) revenue.push("Merchant fee cap at $100: no separate dollar estimate");
-        if (raw === 2) revenue.push("Merchant fee uncapped: +6000000");
+        const amt = revAmount(r.id, raw, plan.year);
+        if (raw === 1) revenue.push(`Merchant fee, 2021 auto sales only, cap $20,000: +${Math.round(amt)}`);
+        if (raw === 2) revenue.push(`Merchant fee, 2021 auto sales only, cap $30,000: +${Math.round(amt)}`);
+        if (raw === 3) revenue.push(`Merchant fee, 2021 auto sales only, cap removed: +${Math.round(amt)}`);
         continue;
       }
       const amt = revAmount(r.id, plan.rev[r.id], plan.year);
@@ -727,13 +733,7 @@ export function Worksheet() {
                 <div className={`choice ${amt || (r.id === "merchant" && raw) ? "on" : ""}`} key={r.id}>
                   <div className="hd">
                     <strong>{r.name}</strong>
-                    <span className="val num">
-                      {r.id === "merchant" && raw === 1
-                        ? "Not estimated"
-                        : amt
-                          ? `+${money(amt)}`
-                          : "$0"}
-                    </span>
+                    <span className="val num">{amt ? `+${money(amt)}` : "$0"}</span>
                   </div>
                   <span className="base">{base}</span>
                   {r.type === "range" && (
@@ -1065,9 +1065,14 @@ export function Worksheet() {
                 City of Panama City, merchant fee
               </a>
               . Code section 7-53: 1% of retail sales, applied only to the first $5,000 of a single
-              item, which is a $50 cap. The FY 2027 adopted budget books $13.75 million. The $6
-              million for removing the cap is an estimate, not an adopted figure. No separate
-              estimate was published for a $100 cap.
+              item, which is a $50 cap. The FY 2027 adopted budget books $13.75 million. The button
+              amounts are GAI Consultants' July 28, 2023 study of 2021 auto sales only: about $2.3
+              million more at a $20,000 cap, $3.6 million at $30,000, and $5.8 million with the cap
+              removed. Planning figures. GAI said the rest of the tax base could not be reliably
+              estimated, and its $31.2 million no-cap calculation is not an achievable estimate.
+              The March 31 and June 11, 2026 workshops cited $3.1 million, $4.6 million, and $6.2
+              million at caps of $20,000, $30,000, and $40,000. Those are not the figures counted
+              here. No 2026 workshop gave a citywide uncap.
             </li>
             <li>
               Florida Department of Revenue CPI homestead table: the 2026 additional non-school

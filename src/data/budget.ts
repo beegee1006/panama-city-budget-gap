@@ -621,12 +621,12 @@ export const REV: Rev[] = [
     id: "merchant",
     type: "seg",
     name: "Change the merchant fee cap",
-    opts: [0, 1, 2],
+    opts: [0, 1, 2, 3],
     unit: "%",
-    labels: { 0: "Keep $50", 1: "Cap at $100", 2: "Remove cap" },
-    val: (v) => (v === 2 ? 6_000_000 : 0),
-    base: () => "Budgeted at $13.75 million under licenses",
-    note: "Section 7-53 charges 1% of retail sales, but only on the first $5,000 of a single item, so the fee stops at $50. The FY 2027 budget books $13.75 million. Removing the cap is an estimate of $6 million more, about $19.75 million in all. That $6 million is 1% of item prices above $5,000, roughly $600 million of sales. A $100 cap is the same 1% on the first $10,000 of an item, another $50 at most. It cannot raise more than that $6 million, and it raises less whenever an item sells for more than $10,000. The city has not published that split, so this worksheet does not count a dollar amount for the $100 cap.",
+    labels: { 0: "Keep $50", 1: "Cap $20k", 2: "Cap $30k", 3: "Uncap autos" },
+    val: (v) => (v === 1 ? 2_305_000 : v === 2 ? 3_611_000 : v === 3 ? 5_845_000 : 0),
+    base: () => "Budgeted at $13.75 million. These choices are auto dealers only, not the whole fee.",
+    note: "Section 7-53 is 1% of a sale, only on the first $5,000 of an item, so the fee stops at $50. The amounts here are the July 28, 2023 GAI study of 2021 auto sales, for planning only. A $20,000 cap was about $2.3 million more from auto dealers, a $30,000 cap about $3.6 million, and removing the cap about $5.8 million. Auto collections in that study were $781,200 with the cap and $6.6 million with it removed. GAI could not reliably estimate the other merchants. Its $31.2 million no-cap calculation is not an achievable estimate and is not counted. The March 31 and June 11, 2026 workshops cited $3.1 million, $4.6 million, and $6.2 million at caps of $20,000, $30,000, and $40,000. This worksheet uses the study's net auto figures, not those lines. A $100 cap was not estimated.",
   },
 ];
 
