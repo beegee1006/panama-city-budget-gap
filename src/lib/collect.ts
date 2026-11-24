@@ -13,6 +13,7 @@ export type PostcardResponse = {
   cuts: string;
   revenue: string;
   closed: string;
+  grid: string;
 };
 
 /** A real form post. The iframe stays on the page so the browser does not cancel it. */
@@ -45,6 +46,7 @@ export function submitPostcard(body: PostcardResponse) {
     cuts: body.cuts,
     revenue: body.revenue,
     payload: JSON.stringify(body),
+    grid: body.grid,
   };
   for (const [key, value] of Object.entries(fields)) {
     const input = document.createElement("input");

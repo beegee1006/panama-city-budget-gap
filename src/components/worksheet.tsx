@@ -261,6 +261,42 @@ export function Worksheet() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function choiceGrid() {
+    const cells: { kind: string; option: string; rate: string; dollars: number }[] = [];
+    for (const [id, level] of Object.entries(plan.cuts)) {
+      const p = PROGS.get(id);
+      if (!p || !level || !maxCut(p)) continue;
+      const pct = Math.min(level, maxCut(p));
+      cells.push({
+        kind: "Cut",
+        option: `${p.dept.name} / ${p.name}`,
+        rate: String(pct),
+        dollars: Math.round((p.amt * pct) / 100),
+      });
+    }
+    for (const r of REV) {
+      const raw = plan.rev[r.id] || 0;
+      const dollars = Math.round(revAmount(r.id, raw, plan.year));
+      if (!dollars) continue;
+      let option = r.name;
+      let rate = String(raw);
+      if (r.id === "mill") {
+        option = "City millage";
+        rate = raw.toFixed(2);
+      } else if (r.id === "fire") option = "Fire assessment";
+      else if (r.id === "zone") option = "Planning and zoning fees";
+      else if (r.id === "lbt") {
+        option = "Local business tax";
+        rate = "5";
+      } else if (r.id === "merchant") {
+        option = raw === 1 ? "Merchant fee cap $20,000" : raw === 2 ? "Merchant fee cap $30,000" : "Merchant fee cap removed";
+        rate = "";
+      }
+      cells.push({ kind: "Revenue", option, rate, dollars });
+    }
+    return cells;
+  }
+
   function choiceLines() {
     const cuts: string[] = [];
     for (const [id, level] of Object.entries(plan.cuts)) {
@@ -337,6 +373,7 @@ export function Worksheet() {
         cuts: lines.cuts,
         revenue: lines.revenue,
         closed: String(Math.round(totals.closed)),
+        grid: JSON.stringify(choiceGrid()),
       });
       setSent("sent");
       setSendNote("Saved to the private response file.");
