@@ -557,7 +557,6 @@ export type RevCheck = {
 export type Rev = RevRange | RevSeg | RevCheck;
 
 const FIRE_ASSESS = 6_059_224;
-const FRANCHISE_E = 4_250_000;
 const ZONING_FEES = 175_000;
 
 export const REV: Rev[] = [
@@ -586,18 +585,6 @@ export const REV: Rev[] = [
     base: () =>
       `The city already charges one. FY 2027 budget: ${money(FIRE_ASSESS, 2)}`,
     note: "It is on the tax bill as a non-ad valorem charge, so homesteads pay it even when the exemption wipes out the city millage. Florida courts allow these assessments for fire protection, not as a blank tax, and the rate has to match a benefit study. Raising it shifts part of the tax cut back onto homeowners and renters.",
-  },
-  {
-    id: "fran",
-    type: "range",
-    name: "Raise the electric franchise fee",
-    min: 0,
-    max: 20,
-    step: 5,
-    unit: "%",
-    val: (v) => (FRANCHISE_E * v) / 100,
-    base: () => `Electric franchise fees are budgeted at ${money(FRANCHISE_E, 2)}`,
-    note: "The fee is set in the franchise agreement, so a change means renegotiating it. The utility passes it through on monthly bills, including renters and homesteaded homes. The gas franchise is a separate $200,000 and is not on this dial.",
   },
   {
     id: "zone",

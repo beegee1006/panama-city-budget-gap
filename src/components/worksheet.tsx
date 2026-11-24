@@ -198,9 +198,7 @@ export function Worksheet() {
             ? `Millage +${raw.toFixed(2)}`
             : r.id === "fire"
               ? `Fire assessment +${raw}%`
-              : r.id === "fran"
-                ? `Franchise fee +${raw}%`
-                : r.id === "merchant"
+              : r.id === "merchant"
                   ? raw === 1
                     ? "Auto cap $20k"
                     : raw === 2
