@@ -1,4 +1,4 @@
-/** Web app URL from the Apps Script deployment. Empty until that deployment exists. */
+/** Web app URL from the Apps Script deployment. */
 export const RESPONSE_WEB_APP =
   "https://script.google.com/macros/s/AKfycbwY4ygYu_LIDVz_4jpk0Nhu5f06r19XhZRLG4uuKxP-qDKNfkqlfNITMh7_YUQL6A4duQ/exec";
 
@@ -15,40 +15,22 @@ export type PostcardResponse = {
   closed: string;
 };
 
-/** Post into a hidden frame. Apps Script web apps do not allow a normal fetch from another site. */
-export function submitPostcard(body: PostcardResponse) {
+/**
+ * Apps Script web apps reject a normal JSON fetch from another site.
+ * A form-encoded POST is allowed, and no-cors keeps the browser from
+ * cancelling it when the response can't be read.
+ */
+export async function submitPostcard(body: PostcardResponse) {
   if (!RESPONSE_WEB_APP) {
-    return Promise.reject(new Error("The response file is not connected yet."));
+    throw new Error("The response file is not connected yet.");
   }
-  return new Promise<void>((resolve, reject) => {
-    const frame = document.createElement("iframe");
-    frame.name = "pc-response-frame";
-    frame.hidden = true;
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = RESPONSE_WEB_APP;
-    form.target = frame.name;
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "payload";
-    input.value = JSON.stringify(body);
-    form.append(input);
-    document.body.append(frame, form);
-    let settled = false;
-    const finish = (ok: boolean) => {
-      if (settled) return;
-      settled = true;
-      window.clearTimeout(timer);
-      form.remove();
-      frame.remove();
-      if (ok) resolve();
-      else reject(new Error("Could not save the response"));
-    };
-    const timer = window.setTimeout(() => finish(false), 15000);
-    frame.addEventListener("load", () => {
-      frame.addEventListener("load", () => finish(true), { once: true });
-      form.submit();
-    }, { once: true });
-    frame.src = "about:blank";
+  const payload = new URLSearchParams();
+  payload.set("payload", JSON.stringify(body));
+  await fetch(RESPONSE_WEB_APP, {
+    method: "POST",
+    mode: "no-cors",
+    redirect: "follow",
+    keepalive: true,
+    body: payload,
   });
 }
