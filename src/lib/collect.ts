@@ -15,22 +15,48 @@ export type PostcardResponse = {
   closed: string;
 };
 
-/**
- * Apps Script web apps reject a normal JSON fetch from another site.
- * A form-encoded POST is allowed, and no-cors keeps the browser from
- * cancelling it when the response can't be read.
- */
-export async function submitPostcard(body: PostcardResponse) {
+/** A real form post. The iframe stays on the page so the browser does not cancel it. */
+export function submitPostcard(body: PostcardResponse) {
   if (!RESPONSE_WEB_APP) {
-    throw new Error("The response file is not connected yet.");
+    return Promise.reject(new Error("The response file is not connected yet."));
   }
-  const payload = new URLSearchParams();
-  payload.set("payload", JSON.stringify(body));
-  await fetch(RESPONSE_WEB_APP, {
-    method: "POST",
-    mode: "no-cors",
-    redirect: "follow",
-    keepalive: true,
-    body: payload,
+  let frame = document.getElementById("pc-response-frame") as HTMLIFrameElement | null;
+  if (!frame) {
+    frame = document.createElement("iframe");
+    frame.id = "pc-response-frame";
+    frame.name = "pc-response-frame";
+    frame.hidden = true;
+    document.body.append(frame);
+  }
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = RESPONSE_WEB_APP;
+  form.target = frame.name;
+  form.acceptCharset = "UTF-8";
+  const fields: Record<string, string> = {
+    name: body.name,
+    email: body.email,
+    year: body.year,
+    assessed: body.assessed,
+    savings2027: body.cityTaxSavings2027,
+    savings2028: body.cityTaxSavings2028,
+    gap: body.gap,
+    closed: body.closed,
+    cuts: body.cuts,
+    revenue: body.revenue,
+    payload: JSON.stringify(body),
+  };
+  for (const [key, value] of Object.entries(fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = value;
+    form.append(input);
+  }
+  document.body.append(form);
+  form.submit();
+  form.remove();
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, 2000);
   });
 }
