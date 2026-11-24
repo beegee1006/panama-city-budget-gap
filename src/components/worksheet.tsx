@@ -58,6 +58,10 @@ const PALS = {
   sand: { bg: "#f3efe6", bg2: "#e4d7c0", ink: "#142028", sub: "#5c6e74", acc: "#0e6e78" },
 };
 
+function fy(year: Year) {
+  return year === 1 ? "FY 2027" : "FY 2028";
+}
+
 function revAmount(id: string, raw: number | undefined, year: Year) {
   const spec = REV.find((r) => r.id === id);
   if (!spec || !raw) return 0;
@@ -162,7 +166,7 @@ export function Worksheet() {
     }
     ctx.fillStyle = P.sub;
     ctx.font = "600 28px 'Source Sans 3', sans-serif";
-    ctx.fillText(`PANAMA CITY  ·  AMENDMENT 3  ·  YEAR ${plan.year}`, 72, 110);
+    ctx.fillText(`PANAMA CITY  ·  AMENDMENT 3  ·  ${fy(plan.year)}`, 72, 110);
     ctx.fillStyle = P.ink;
     ctx.font = "560 84px Fraunces, serif";
     const y0 = wrap(ctx, plan.headline || "My Panama City budget", 72, 220, 920, 92);
@@ -365,7 +369,7 @@ export function Worksheet() {
       await submitPostcard({
         name,
         email,
-        year: plan.year === 1 ? "Year 1" : "Year 2",
+        year: fy(plan.year),
         assessed: String(Math.round(plan.av || 0)),
         cityTaxSavings2027: String(Math.round(tax.s27)),
         cityTaxSavings2028: String(Math.round(tax.s28)),
@@ -404,7 +408,7 @@ export function Worksheet() {
           <p className="lede">
             Florida voters raised the homestead exemption on non-school property taxes. The Bay
             County Property Appraiser's estimate, reported before the vote, put Panama City's loss
-            at {dollars(GAP[1])} the first year and {dollars(GAP[2])} once the $250,000 exemption
+            at {dollars(GAP[1])} in FY 2027 and {dollars(GAP[2])} in FY 2028, once the $250,000 exemption
             is in place. Use the city's own FY 2027 adopted budget to see what that means for a
             homestead tax bill and for the services the General Fund pays for.
           </p>
@@ -427,20 +431,20 @@ export function Worksheet() {
       <div className="meter">
         <div className="wrap">
           <div className="meter-row">
-            <div className="year-toggle" role="group" aria-label="Which year's gap">
+            <div className="year-toggle" role="group" aria-label="Which fiscal year">
               <button
                 type="button"
                 aria-pressed={plan.year === 1}
                 onClick={() => setPlan((p) => ({ ...p, year: 1 }))}
               >
-                Year 1 · {money(GAP[1])}
+                FY 2027 · {money(GAP[1])}
               </button>
               <button
                 type="button"
                 aria-pressed={plan.year === 2}
                 onClick={() => setPlan((p) => ({ ...p, year: 2 }))}
               >
-                Year 2 · {money(GAP[2])}
+                FY 2028 · {money(GAP[2])}
               </button>
             </div>
             <div className={`status num ${totals.left <= 0 ? "done" : ""}`} aria-live="polite">
@@ -486,12 +490,12 @@ export function Worksheet() {
               <span>Ad valorem at {MILL} mills. The full gap is about 19% of this levy.</span>
             </div>
             <div className="stat">
-              <span>Year 1 loss</span>
+              <span>FY 2027 loss</span>
               <b className="num">{money(GAP[1])}</b>
               <span>$150,000 exemption. About 4% of the General Fund.</span>
             </div>
             <div className="stat">
-              <span>Year 2 loss</span>
+              <span>FY 2028 loss</span>
               <b className="num">{money(GAP[2])}</b>
               <span>$250,000 exemption. About 6% of the General Fund.</span>
             </div>
@@ -512,7 +516,7 @@ export function Worksheet() {
               <p className="eyebrow">If police and fire are spared</p>
               <h3 style={{ marginTop: 8 }}>About a 12% cut everywhere else</h3>
               <p className="note">
-                Police and fire are {money(POLICE_FIRE)}, half the General Fund. The Year 2 gap is{" "}
+                Police and fire are {money(POLICE_FIRE)}, half the General Fund. The FY 2028 gap is{" "}
                 {money(GAP[2])} of the other {money(flexBase)}. Debt transfers and the CRA payment
                 are not really optional, so the cut on what is left would be deeper than 12%.
               </p>
@@ -560,7 +564,7 @@ export function Worksheet() {
           </div>
           <div className="grid-2">
             <article className="card">
-              <h3>$150,000 exemption first</h3>
+              <h3>FY 2027 · $150,000 exemption</h3>
               <p className="note">
                 On the 2027 tax roll, homesteads get up to $150,000 off assessed value for city,
                 county and other non-school levies. The current non-school exemption is $25,000
@@ -568,7 +572,7 @@ export function Worksheet() {
               </p>
             </article>
             <article className="card">
-              <h3>$250,000 the next year</h3>
+              <h3>FY 2028 · $250,000 exemption</h3>
               <p className="note">
                 The exemption rises to $250,000 on the 2028 roll, then adjusts with inflation
                 starting in 2029. School taxes still use the $25,000 homestead exemption.
@@ -595,10 +599,10 @@ export function Worksheet() {
               <strong>2026</strong>Vote
             </div>
             <div>
-              <strong>2027</strong>$150K
+              <strong>FY 2027</strong>$150K
             </div>
             <div>
-              <strong>2028</strong>$250K
+              <strong>FY 2028</strong>$250K
             </div>
             <div>
               <strong>2029</strong>CPI
@@ -664,18 +668,18 @@ export function Worksheet() {
             </p>
           </div>
           <div className="card">
-            <Row label="2026 · today" value={dollars(tax.a.tax)} sub="city tax per year" />
-            <Row label="2027 · $150K" value={dollars(tax.b.tax)} sub={`saves ${dollars(tax.s27)}`} />
-            <Row label="2028 · $250K" value={dollars(tax.c.tax)} sub={`saves ${dollars(tax.s28)}`} />
+            <Row label="FY 2026 · today" value={dollars(tax.a.tax)} sub="city tax per year" />
+            <Row label="FY 2027 · $150K" value={dollars(tax.b.tax)} sub={`saves ${dollars(tax.s27)}`} />
+            <Row label="FY 2028 · $250K" value={dollars(tax.c.tax)} sub={`saves ${dollars(tax.s28)}`} />
             <button type="button" className="textbtn ghost" onClick={() => setShowMath((v) => !v)}>
               {showMath ? "Hide the calculation" : "See the calculation"}
             </button>
             {showMath && (
-              <pre className="math">{`2026: ${dollars(tax.av)} − ${dollars(tax.a.ex)} exemption = ${dollars(tax.a.taxable)} taxable
+              <pre className="math">{`FY 2026: ${dollars(tax.av)} − ${dollars(tax.a.ex)} exemption = ${dollars(tax.a.taxable)} taxable
       × ${MILL} ÷ 1,000 = ${dollars(tax.a.tax)}
-2027: ${dollars(tax.av)} − $150,000 = ${dollars(tax.b.taxable)} taxable → ${dollars(tax.b.tax)}
+FY 2027: ${dollars(tax.av)} − $150,000 = ${dollars(tax.b.taxable)} taxable → ${dollars(tax.b.tax)}
       savings ${dollars(tax.s27)}
-2028: ${dollars(tax.av)} − $250,000 = ${dollars(tax.c.taxable)} taxable → ${dollars(tax.c.tax)}
+FY 2028: ${dollars(tax.av)} − $250,000 = ${dollars(tax.c.taxable)} taxable → ${dollars(tax.c.tax)}
       savings ${dollars(tax.s28)}`}</pre>
             )}
             <p className="note">
@@ -706,7 +710,7 @@ export function Worksheet() {
             <p className="eyebrow">Budget builder</p>
             <h2>A city budget, built by you</h2>
             <p className="lede">
-              Close the Year {plan.year} gap by cutting General Fund lines, adding revenue, or
+              Close the {fy(plan.year)} gap by cutting General Fund lines, adding revenue, or
               both. Amounts are the FY 2027 adopted figures. Police, fire, public works, and
               engineering stop at a 25% cut. Public works here is streets, paving, signs,
               facilities, City Hall, and public works administration. Other ongoing lines keep at
@@ -1021,10 +1025,10 @@ export function Worksheet() {
             the 2028 roll. It can still owe the county, the school board, the downtown board if it
             is inside that district, and the assessments.
           </Faq>
-          <Faq q="Why is the city's loss bigger in year two?">
+          <Faq q="Why is the city's loss bigger in FY 2028?">
             The exemption steps up: $150,000 first, then $250,000. The Bay County Property
-            Appraiser's figures, reported by the News Herald on June 25, 2026, were $2,485,248 the
-            first year and an additional $1,340,763 in 2028. Added together, that is $3,826,011.
+            Appraiser's figures, reported by the News Herald on June 25, 2026, were $2,485,248 in
+            FY 2027 and an additional $1,340,763 in FY 2028. Added together, that is $3,826,011.
             The same figure came up at the city's June 11, 2026 budget workshop. These are
             estimates from before the election, not a revised FY 2028 budget.
           </Faq>
@@ -1033,8 +1037,8 @@ export function Worksheet() {
             rate is 4.7999 mills, and the downtown district adds 3 mills inside its boundary. The
             aggregate rate of 4.8609 is already 2.57% over the rolled-back rate of 4.7393, which
             took the higher vote threshold under the TRIM law. After the exemption, each mill
-            raises less because the tax base is smaller: about {money(millWorth(1))} in year 1 and{" "}
-            {money(millWorth(2))} in year 2, against about {money(AD_VALOREM / MILL)} on today's
+            raises less because the tax base is smaller: about {money(millWorth(1))} in FY 2027 and{" "}
+            {money(millWorth(2))} in FY 2028, against about {money(AD_VALOREM / MILL)} on today's
             budgeted levy.
           </Faq>
           <Faq q="Why can't I cut the debt transfers or the CRA payment?">
@@ -1087,8 +1091,8 @@ export function Worksheet() {
               <a href="https://www.newsherald.com/story/news/local/2026/06/25/property-tax-plan-could-gut-bay-county-budgets/90659981007">
                 Panama City News Herald, June 25, 2026
               </a>
-              . Property Appraiser estimates for Panama City: $2,485,248 the first year and an
-              additional $1,340,763 in 2028. The June 11 workshop figure of $3,826,011 matches that
+              . Property Appraiser estimates for Panama City: $2,485,248 in FY 2027 and an
+              additional $1,340,763 in FY 2028. The June 11 workshop figure of $3,826,011 matches that
               sum.
             </li>
             <li>

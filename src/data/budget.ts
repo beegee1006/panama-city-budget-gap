@@ -570,7 +570,7 @@ export const REV: Rev[] = [
     unit: "mills",
     val: (v, year) => v * millWorth(year),
     base: (year) =>
-      `Current rate ${MILL} mills · 1 mill ≈ ${money(millWorth(year), 2)} after the Year ${year} loss`,
+      `Current rate ${MILL} mills · 1 mill ≈ ${money(millWorth(year), 2)} after the FY ${year === 1 ? "2027" : "2028"} loss`,
     note: "The FY 2027 aggregate rate of 4.8609 mills is already 2.57% above the rolled-back rate of 4.7393. Under Florida's TRIM law, beating the rolled-back rate takes a two-thirds vote, and beating 110% of it takes a unanimous vote. Municipal operating millage cannot exceed 10 mills. A higher rate falls mostly on non-homestead property and on homes assessed above the new exemption.",
   },
   {
