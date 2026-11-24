@@ -1,6 +1,6 @@
 /** Web app URL from the Apps Script deployment. */
 export const RESPONSE_WEB_APP =
-  "https://script.google.com/macros/s/AKfycbw_9tnPlXPIq_AImYgWCgapJ68cvRcN7uwDjD2POt4oxh0vjf234LY2hqV88LPBzVQY/exec";
+  "https://script.google.com/macros/s/AKfycbwasyNJOTzhz7pzGQv6ScuClE6UsXBSujCKRVSL82ooa0oJwj_wDUQHs9Ncn60vLIbTSA/exec";
 
 export type PostcardResponse = {
   name: string;
