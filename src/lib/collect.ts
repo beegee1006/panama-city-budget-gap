@@ -1,5 +1,6 @@
 /** Web app URL from the Apps Script deployment. Empty until that deployment exists. */
-export const RESPONSE_WEB_APP = "";
+export const RESPONSE_WEB_APP =
+  "https://script.google.com/macros/s/AKfycbwY4ygYu_LIDVz_4jpk0Nhu5f06r19XhZRLG4uuKxP-qDKNfkqlfNITMh7_YUQL6A4duQ/exec";
 
 export type PostcardResponse = {
   name: string;
