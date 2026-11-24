@@ -448,7 +448,9 @@ export function Worksheet() {
               </button>
             </div>
             <div className={`status num ${totals.left <= 0 ? "done" : ""}`} aria-live="polite">
-              {totals.left <= 0 ? "Gap closed" : `${money(totals.left)} to go`}
+              {totals.left <= 0
+                ? `${fy(plan.year)} gap closed`
+                : `${money(totals.left)} left of ${money(totals.gap)}`}
             </div>
           </div>
           <div className="track" aria-hidden>
@@ -464,7 +466,7 @@ export function Worksheet() {
               <i className="dot" style={{ background: "var(--color-gulf)" }} />
               New revenue {money(totals.rev)}
             </span>
-            <span>Target {money(totals.gap)}</span>
+            <span>{fy(plan.year)} target {money(totals.gap)}</span>
           </div>
         </div>
       </div>
@@ -721,11 +723,14 @@ FY 2029: ${dollars(tax.av)} − $250,000 = ${dollars(tax.c.taxable)} taxable →
         <div className="wrap">
           <div className="sec-head">
             <p className="eyebrow">Budget builder</p>
-            <h2>Solve {fy(plan.year)}</h2>
+            <h2>Solve {fy(plan.year)} · {money(totals.gap)}</h2>
             <p className="lede">
-              Close the {fy(plan.year)} gap by cutting General Fund lines, adding revenue, or
-              both. Amounts are the FY 2027 adopted figures. Police, fire, public works, and
-              engineering stop at a 25% cut. Public works here is streets, paving, signs,
+              {plan.year === 1
+                ? "FY 2028 is the $150,000 exemption. The hole that year is $2.49 million, not the larger FY 2029 total."
+                : "FY 2029 is the $250,000 exemption. The hole that year is $3.83 million, the FY 2028 loss plus the added loss."}{" "}
+              Close it by cutting General Fund lines, adding revenue, or both. Amounts are the FY
+              2027 adopted figures. Police, fire, public works, and engineering stop at a 25% cut.
+              Public works here is streets, paving, signs,
               facilities, City Hall, and public works administration. Other ongoing lines keep at
               least 25% as a basic cost. Contributions and one-time equipment outside those
               departments can still go to zero. Debt and the CRA payment stay fixed.
