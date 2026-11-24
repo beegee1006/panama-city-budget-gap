@@ -200,7 +200,9 @@ export function Worksheet() {
               ? `Fire assessment +${raw}%`
               : r.id === "fran"
                 ? `Franchise fee +${raw}%`
-                : `Zoning fees +${raw}%`;
+                : r.id === "merchant"
+                  ? "Merchant fee, no cap"
+                  : `Zoning fees +${raw}%`;
       picks.push({ t: label, v, rev: true });
     }
     picks.sort((a, b) => b.v - a.v);
@@ -266,6 +268,12 @@ export function Worksheet() {
     }
     const revenue: string[] = [];
     for (const r of REV) {
+      if (r.id === "merchant") {
+        const raw = plan.rev.merchant || 0;
+        if (raw === 1) revenue.push("Merchant fee cap at $100: no separate dollar estimate");
+        if (raw === 2) revenue.push("Merchant fee uncapped: +6000000");
+        continue;
+      }
       const amt = revAmount(r.id, plan.rev[r.id], plan.year);
       if (amt) revenue.push(`${r.name}: +${Math.round(amt)}`);
     }
@@ -658,11 +666,11 @@ export function Worksheet() {
             <h2>A city budget, built by you</h2>
             <p className="lede">
               Close the Year {plan.year} gap by cutting General Fund lines, adding revenue, or
-              both. Amounts are the FY 2027 adopted figures. Police, fire, and public works stop
-              at a 25% cut. Public works here is streets, paving, signs, facilities, City Hall, and
-              public works administration. Other ongoing lines keep at least 25% as a basic cost.
-              Contributions and one-time equipment outside those departments can still go to zero.
-              Debt and the CRA payment stay fixed.
+              both. Amounts are the FY 2027 adopted figures. Police, fire, public works, and
+              engineering stop at a 25% cut. Public works here is streets, paving, signs,
+              facilities, City Hall, and public works administration. Other ongoing lines keep at
+              least 25% as a basic cost. Contributions and one-time equipment outside those
+              departments can still go to zero. Debt and the CRA payment stay fixed.
             </p>
           </div>
           <div className="row-actions" style={{ marginBottom: 16 }}>
@@ -716,10 +724,16 @@ export function Worksheet() {
               const amt = revAmount(r.id, raw, plan.year);
               const base = r.type === "range" ? r.base(plan.year) : r.base();
               return (
-                <div className={`choice ${amt ? "on" : ""}`} key={r.id}>
+                <div className={`choice ${amt || (r.id === "merchant" && raw) ? "on" : ""}`} key={r.id}>
                   <div className="hd">
                     <strong>{r.name}</strong>
-                    <span className="val num">{amt ? `+${money(amt)}` : "$0"}</span>
+                    <span className="val num">
+                      {r.id === "merchant" && raw === 1
+                        ? "Not estimated"
+                        : amt
+                          ? `+${money(amt)}`
+                          : "$0"}
+                    </span>
                   </div>
                   <span className="base">{base}</span>
                   {r.type === "range" && (
@@ -751,7 +765,11 @@ export function Worksheet() {
                           aria-pressed={raw === o}
                           onClick={() => setPlan((p) => ({ ...p, rev: { ...p.rev, [r.id]: o } }))}
                         >
-                          {o ? `+${o}%` : "No change"}
+                          {r.type === "seg" && r.labels?.[o]
+                            ? r.labels[o]
+                            : o
+                              ? `+${o}%`
+                              : "No change"}
                         </button>
                       ))}
                     </div>
@@ -1041,6 +1059,15 @@ export function Worksheet() {
             <li>
               WJHG, September 22, 2026: the commission adopted a budget over $140 million, kept the
               millage unchanged, and described the cuts as a way to rebuild reserves.
+            </li>
+            <li>
+              <a href="https://www.panamacity.gov/779/Merchant-License-and-1-Fee">
+                City of Panama City, merchant fee
+              </a>
+              . Code section 7-53: 1% of retail sales, applied only to the first $5,000 of a single
+              item, which is a $50 cap. The FY 2027 adopted budget books $13.75 million. The $6
+              million for removing the cap is an estimate, not an adopted figure. No separate
+              estimate was published for a $100 cap.
             </li>
             <li>
               Florida Department of Revenue CPI homestead table: the 2026 additional non-school

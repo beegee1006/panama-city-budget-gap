@@ -322,8 +322,9 @@ export const DEPTS: Dept[] = [
         id: "eng",
         name: "Engineering",
         amt: 1_496_105,
-        cap: 100,
-        note: "City engineering in the General Fund.",
+        cap: 25,
+        floor: PROTECTED_FLOOR,
+        note: "City engineering in the General Fund. This worksheet stops at a 25% cut. Deeper than that, the city would contract the work out, and a basic cost would remain.",
       },
     ],
   },
@@ -541,6 +542,7 @@ export type RevSeg = {
   base: () => string;
   val: (v: number) => number;
   note: string;
+  labels?: Record<number, string>;
 };
 
 export type RevCheck = {
@@ -615,14 +617,20 @@ export const REV: Rev[] = [
     base: () => "Occupational license receipts are budgeted at $250,000",
     note: "State law limits local business tax increases to 5% every other year, and that takes a supermajority. Five percent of this line is $12,500.",
   },
+  {
+    id: "merchant",
+    type: "seg",
+    name: "Change the merchant fee cap",
+    opts: [0, 1, 2],
+    unit: "%",
+    labels: { 0: "Keep $50", 1: "Cap at $100", 2: "Remove cap" },
+    val: (v) => (v === 2 ? 6_000_000 : 0),
+    base: () => "Budgeted at $13.75 million under licenses",
+    note: "Section 7-53 charges 1% of retail sales, but only on the first $5,000 of a single item, so the fee stops at $50. The FY 2027 budget books $13.75 million. Removing the cap is an estimate of $6 million more, about $19.75 million in all. That $6 million is 1% of item prices above $5,000, roughly $600 million of sales. A $100 cap is the same 1% on the first $10,000 of an item, another $50 at most. It cannot raise more than that $6 million, and it raises less whenever an item sells for more than $10,000. The city has not published that split, so this worksheet does not count a dollar amount for the $100 cap.",
+  },
 ];
 
 export const LOCKED_REVENUE: [string, string, string][] = [
-  [
-    "Merchant fee",
-    "$13.75M",
-    "Budgeted under licenses. The adopted book does not state the rate, so it is not a dial here.",
-  ],
   [
     "Utility service taxes",
     "$5.48M",
