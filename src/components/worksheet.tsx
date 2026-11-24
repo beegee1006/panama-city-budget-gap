@@ -639,7 +639,7 @@ export function Worksheet() {
         <div className="wrap">
           <div className="row-actions" style={{ marginTop: 8 }}>
             <button type="button" className="textbtn" onClick={() => go(2)}>
-              Make the postcard
+              Close the Gap
             </button>
             <button type="button" className="textbtn ghost" onClick={() => go(0)}>
               Back
