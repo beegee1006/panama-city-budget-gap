@@ -404,13 +404,17 @@ export function Worksheet() {
             </span>
             <span className="eyebrow">Panama City · General Fund</span>
           </div>
-          <h1>Close a {money(GAP[2])} gap in the city budget.</h1>
+          <h1>
+            {step === 2
+              ? `Close the ${fy(plan.year)} gap of ${money(totals.gap)}.`
+              : "The city has two gaps. Close one."}
+          </h1>
           <p className="lede">
-            Florida voters raised the homestead exemption on non-school property taxes. The Bay
-            County Property Appraiser's estimate, reported before the vote, put Panama City's loss
-            at {dollars(GAP[1])} in FY 2028 and {dollars(GAP[2])} in FY 2029, once the $250,000 exemption
-            is in place. Use the city's own FY 2027 adopted budget to see what that means for a
-            homestead tax bill and for the services the General Fund pays for.
+            {step === 2
+              ? plan.year === 1
+                ? "You are solving FY 2028. That hole is $2.49 million, from the $150,000 exemption. It is not the FY 2029 total."
+                : "You are solving FY 2029. That hole is $3.83 million, from the $250,000 exemption."
+              : "Florida voters raised the homestead exemption on non-school property taxes. The Bay County Property Appraiser's estimate puts the city's loss at $2,485,248 in FY 2028 and $3,826,011 in FY 2029. Pick one year. The postcard closes that year only."}
           </p>
           <nav className="nav" aria-label="Steps">
             {["The gap", "Your home", "Postcard"].map((label, i) => (
